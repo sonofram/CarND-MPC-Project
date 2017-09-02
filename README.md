@@ -68,7 +68,7 @@ Model Predictive Controller implementation
     so the equations have been altered to account for this in MPC.cpp.
 	
  
-# *Adjust of cost functoin weights*
+# *Adjust of cost function weights*
     This is the final peice in the puzzle. As explained earlier	multiple parameters involved in cost 
     function for smooth ride of car like
     * Cost function

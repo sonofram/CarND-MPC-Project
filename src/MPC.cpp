@@ -14,6 +14,11 @@ using CppAD::AD;
 size_t N = 10 ;
 double dt = 0.1 ;
 
+//size_t N = 20 ;
+//double dt = 0.05 ;
+
+
+
 // This value assumes the model presented in the classroom is used.
 //
 // It was obtained by measuring the radius formed by running the vehicle in the
@@ -60,6 +65,33 @@ class FG_eval {
     // TODO: Define the cost related the reference state and
     // any anything you think may be beneficial.
 
+    /*
+     * N = 20 and dt = 0.05
+     //cost specific to state error.
+        for (int t = 0; t < N-1; t++) {
+        	fg[0] += 100*CppAD::pow(vars[cte_start + t], 2);
+        	fg[0] += 900*CppAD::pow(vars[epsi_start+t], 2);
+        	fg[0] += CppAD::pow(vars[v_start+t]-ref_v, 2);
+
+        }
+
+        for (int t = 0; t <  N-1; t++) {
+            fg[0] += 35000*CppAD::pow(vars[delta_start + t], 2);
+            fg[0] += 10*CppAD::pow(vars[a_start + t], 2);
+
+        }
+
+        //fg[0] += CppAD::pow(100, 2);
+        //cost specific to control input
+
+        for (int t = 0; t < N - 2; t++) {
+          fg[0] += 35000*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2);
+          fg[0] += 10*CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);
+        }
+
+    */
+
+
     //cost specific to state error.
     for (int t = 0; t < N-1; t++) {
     	fg[0] += 400*CppAD::pow(vars[cte_start + t], 2);
@@ -71,7 +103,6 @@ class FG_eval {
     for (int t = 0; t <  N-1; t++) {
         fg[0] += 6000*CppAD::pow(vars[delta_start + t], 2);
         fg[0] += 10*CppAD::pow(vars[a_start + t], 2);
-        //fg[0] += 1000*CppAD::pow(vars[delta_start + t] * vars[v_start+t], 2);
 
     }
 
@@ -118,6 +149,9 @@ class FG_eval {
       AD<double> delta0,a0;
 
       // Only consider the actuation at time t.
+      //This else condition will help in latency. As there is 100 ms latency
+      //car would have move one timestep a head instead of t-1, ideally, we shoud use
+      //t-2 to consider latency.
       if(t == 1){
 		  delta0 = vars[delta_start + t - 1];
 		  a0 = vars[a_start + t - 1];
