@@ -1,8 +1,101 @@
 # CarND-Controls-MPC
 Self-Driving Car Engineer Nanodegree Program
-
 ---
 
+Model Predictive Controller implementation
+---
+
+[//]: # (Image References)
+[image0]: ./Model.png "Image - Model"
+
+# *The Model:* involves four important groups of input
+	* Current state parameters
+	* Future predicted state equations and parameters and these parameters based on kinematic vehicle model
+		* vehicle's x and y coordinates, 
+		* orientation angle (psi), 
+		* velocity, 
+		* cross-track error and 
+		* psi error (epsi). 
+	* Actuators
+		* Acceleration
+		* Delta (steering angle change)
+	* Cost function
+		* cte (cross track error)
+		* epsi (orientation error)
+		* velocity cost that penalize for excessive velocity
+		* delta cost that penalize excessive delta change
+		* current state and next state delta different (for smooth transition)
+		
+    MPC model used for controlling autonomous car reduced to an optimization problem that will work on above 
+    mentioned parameter groups
+    
+ ---   
+    
+![Image - MPC Model Setup][image0]
+    
+    
+# *Timestep Length and Elapsed Duration (N & dt)*
+	Model generates reference path based on polynomial equations with help of predefined path specific data points. 
+	Now, based on current state, MPC optimized control inputs(acceleration & delta) and also generates vector of 
+	control inputs for horizon.In the case of driving a car, T should be a few seconds, at most. Beyond that horizon,
+	the environment will change enough that it won't make sense to predict any further into the future. Horizon is 
+	defined by two paramter N and dt. dt = elapsed duration between two timestep length and	N represent timestep length.
+	size of horizon vector will be T = N * dt.
+	
+	MPC attempts to approximate a continuous reference trajectory by means of discrete paths between actuations.
+	
+	In this excercise, two different combination of N and dt were considered
+	-----------
+	| N | dt  |
+	-----------
+	| 10| 0.1 |
+	| 20| 0.05|
+	
+	Each of above combination needed different adjustment to cost function weights.
+
+# *Polynomial Fitting and MPC Preprocessing*	
+	The waypoints are preprocessed by transforming them to the vehicle's cordinate system. This simplifies the 
+	process to fit a polynomial to the waypoints because the vehicle's x and y coordinates are now at the 
+	origin (0, 0) and the orientation angle is also zero.
+	
+	This generates polynomial that fits the path.
+	
+# *Model Predictive Control with Latency*	
+	
+    The approach to dealing with latency in the original kinematic equations depend upon the actuations 
+    from the previous timestep, however, due to delay of 100ms the actuations are applied another timestep
+    instead of previous one(it should be applied to t-2 instead of t-1 which is previous timestamp), 
+    so the equations have been altered to account for this in MPC.cpp.
+	
+ 
+# *Adjust of cost functoin weights*
+    This is the final peice in the puzzle. As explained earlier	multiple parameters involved in cost 
+    function for smooth ride of car like
+    * Cost function
+    		* cte (cross track error)
+    		* epsi (orientation error)
+    		* velocity cost that penalize for excessive velocity
+    		* delta cost that penalize excessive delta change
+		* current state and next state delta different (for smooth transition)
+
+    All above parameters invovled in cost functions are not equal weighted. therefore, weights for cte
+    and epsi adjusted relatively to keep the car in middle of the lane. Once, it was realized that car 
+    is in middle lane and later, it was found that car start wobbling and swinging as velocity picks up. 
+    Therefore, weight sof delta and delta difference were modified to penalize the severe delta changes.
+    
+    One important find is that When N & dt combination changed from {10,0.1} to {20,0.05}, cte and epsi
+    weights were brought down significantly. At the same tiem weights of delta and delta difference went
+    up very high. Logically, it make sense as timestep length increase, cte and epsi will be less compared
+    to heigher timestep length. Even as very small change in delta might look like huge change.
+    
+ ---   
+Below is the recording link for car driving on track.
+    
+https://youtu.be/y-QlJVvY18Q
+
+
+
+---
 ## Dependencies
 
 * cmake >= 3.5
